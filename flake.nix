@@ -1,16 +1,5 @@
 {
-  description = "Python and Jupyter Environment for LLM from Scratch";
-
-  nixConfig = {
-    extra-substituters = [
-      "https://cache.nixos.org"
-      "https://nix-community.cachix.org"
-    ];
-    extra-trusted-public-keys = [
-      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-    ];
-  };
+  description = "Python and CUDA Environment for LLM from Scratch";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -21,35 +10,36 @@
       system = "x86_64-linux";
       pkgs = import nixpkgs {
         inherit system;
-        config = {
-          allowUnfree = true;
-          allowBroken = true;
-        };
+        config = { allowUnfree = true; };
       };
-
-      # Using Python 3.12 for maximum package compatibility
-      myPython = pkgs.python312;
-
-      pythonEnv = myPython.withPackages (ps: with ps; [
-        ipykernel
-        jupyter
-        numpy
-        pandas
-        matplotlib
-        torch
-        tiktoken
-        tensorflow
-      ]);
     in
     {
       devShells.${system}.default = pkgs.mkShell {
-        buildInputs = [
-          pythonEnv
+        buildInputs = with pkgs; [
+          python312
+          python312Packages.pip
+          python312Packages.virtualenv
+          python312Packages.ipykernel
+          python312Packages.numpy
+          python312Packages.pandas
+          python312Packages.matplotlib
+          python312Packages.pyarrow
+          python312Packages.pyyaml
+          python312Packages.tiktoken
         ];
 
         shellHook = ''
-          python -m ipykernel install --user --name=nix-llm-kernel --display-name "Python 3.12 (LLM Flake)" > /dev/null 2>&1
-          echo "LLM development environment loaded successfully."
+          if [ ! -d ".venv" ]; then
+            python -m venv .venv
+            echo "Created virtual environment (.venv)"
+          fi
+          
+          source .venv/bin/activate
+          
+          # Expose both the Nvidia drivers AND the Nix C++ standard library to pip wheels
+          export LD_LIBRARY_PATH=/run/opengl-driver/lib:${pkgs.stdenv.cc.cc.lib}/lib:$LD_LIBRARY_PATH
+
+          echo "Virtual environment ready."
         '';
       };
     };

@@ -1,0 +1,7 @@
+.direnv/
+.envrc
+.venv/
+llm/checkpoints/
+llm/data/
+llm/__pycache__/
+bench_gpus.py

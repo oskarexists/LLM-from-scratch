@@ -8,7 +8,7 @@ import os
 import math
 import time
 import contextlib
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 import torch
 import tiktoken
@@ -21,11 +21,8 @@ from textgen import generate
 class TrainSettings:
     """Everything tunable about a run. main.py fills in the computed fields."""
 
-    #*a 6 GB 2060 only exposes about 5.6 GB. Measured: ~2.96 GB of params,*
-    #*grads and AdamW state plus roughly 0.45 GB per sequence, and rank 0 pays*
-    #*for evaluation on top of training -- micro_batch 4 OOMs there. Keep*
-    #*micro_batch * grad_accum at 128 so the optimizer step still sees 65,536*
-    #*tokens whatever you set these to.*
+    #Keep micro_batch * grad_accum at 128 so the optimizer step still sees 65,536
+    #tokens whatever you set these to.
     micro_batch: int = 2         # sequences per GPU per forward pass
     grad_accum: int = 64         # micro-steps per optimizer step
     num_workers: int = 3         # DataLoader workers per rank

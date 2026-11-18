@@ -1,7 +1,7 @@
 """Entry point for pretraining on the token files prepare_data.py produced.
 
     python main.py                                # single GPU / CPU
-    torchrun --nproc_per_node=2 main.py           # both 2060s
+    torchrun --nproc_per_node=n main.py           # n GPUs
 
 Everything environment-shaped lives here: process group, device, loaders,
 model, optimizer. The loop itself is in train.py.
